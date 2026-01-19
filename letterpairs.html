@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3BLD Letter Pair Trainer v4 (Customizable)</title>
+    <style>
+        /* DARK MODE VARIABLES */
+        :root {
+            --primary: #3b82f6;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem; /* Prevent edge touching on mobile */
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        h1 { margin-top: 0; color: var(--primary); }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Inputs */
+        select, input[type="number"], input[type="text"], textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            background-color: var(--bg);
+            color: var(--text);
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            color-scheme: dark;
+            font-family: inherit;
+        }
+        
+        /* Specific styles for the JSON editor */
+        textarea {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            min-height: 300px;
+            line-height: 1.4;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Buttons */
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            margin-bottom: 0.5rem;
+        }
+
+        button:hover { filter: brightness(110%); }
+        
+        button.secondary {
+            background-color: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-muted);
+        }
+        button.secondary:hover {
+            border-color: var(--text-muted);
+            color: var(--text);
+            background-color: var(--border);
+        }
+        
+        button.danger {
+            background-color: transparent;
+            border: 2px solid var(--error);
+            color: var(--error);
+        }
+        button.danger:hover {
+            background-color: var(--error);
+            color: white;
+        }
+
+        /* Quiz UI */
+        .question-display {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 1rem 0;
+            color: var(--text);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            word-break: break-word;
+        }
+
+        .feedback {
+            height: 1.5rem;
+            margin: 0.5rem 0;
+            font-weight: bold;
+        }
+        .feedback.correct { color: var(--success); }
+        .feedback.wrong { color: var(--error); }
+
+        .progress {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .hidden { display: none; }
+        
+        /* Results Table */
+        .results-list {
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 1rem 0;
+            border-top: 1px solid var(--border);
+        }
+        .result-item {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .missed { color: var(--error); }
+        .success { color: var(--success); }
+        small { color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div id="setup-screen">
+        <h1>Letter Pair Trainer</h1>
+        
+        <div class="form-group">
+            <label>Test Mode</label>
+            <select id="test-mode">
+                <option value="normal">Show Pair, Guess Word (e.g. AA -> ?)</option>
+                <option value="reverse">Show Word, Guess Pair (e.g. Apple -> ?)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Starting Letter</label>
+            <select id="letter-filter">
+                <option value="ALL">All Available (A-F)</option>
+                <option value="A">Starts with A</option>
+                <option value="B">Starts with B</option>
+                <option value="C">Starts with C</option>
+                <option value="D">Starts with D</option>
+                <option value="E">Starts with E</option>
+                <option value="F">Starts with F</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Number of Pairs</label>
+            <input type="number" id="num-pairs" value="10" min="1" max="144">
+        </div>
+
+        <button onclick="startQuiz()">Start Practice</button>
+        <button class="secondary" onclick="openEditor()">Edit Database</button>
+    </div>
+
+    <div id="editor-screen" class="hidden">
+        <h1>Edit Database</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+            Edit the JSON below. Be careful with commas and quotes!
+        </p>
+        <textarea id="json-editor" spellcheck="false"></textarea>
+        <div id="editor-error" style="color: var(--error); font-weight: bold; margin-bottom: 10px;"></div>
+        
+        <button onclick="saveDatabase()">Save & Return</button>
+        <button class="secondary" onclick="closeEditor()">Cancel</button>
+        <button class="danger" onclick="resetDefaults()" style="margin-top: 1rem;">Reset to Default</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div class="progress">Pair <span id="current-count">1</span> / <span id="total-count">10</span></div>
+        
+        <div class="question-display" id="display-text">AA</div>
+        
+        <div class="feedback" id="feedback-msg"></div>
+        
+        <input type="text" id="user-input" placeholder="Type your answer..." autocomplete="off">
+        <button onclick="submitAnswer()" style="margin-top: 1rem;">Submit</button>
+        <button class="secondary" onclick="endQuiz()">Quit</button>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h1>Results</h1>
+        <p>Score: <strong id="final-score">0</strong> / <strong id="final-total">0</strong></p>
+        <div class="results-list" id="results-log">
+            </div>
+        <button onclick="location.reload()">Practice Again</button>
+    </div>
+</div>
+
+<script>
+    // The exact default list provided by the user
+    const defaultDatabase = {
+        // Row A
+        "AA": "AA perm", "AB": "ABs", "AC": "Air Conditioner", "AD": "ADvertisement", "AE": "AEroplane", "AF": "AFrica",
+        "AG": "Silver (Ag)", "AH": "Air Hockey", "AI": "Artificial Intelligence (AI)", "AJ": "Right-angled triangle)", "AK": "AK-47", "AL": "ALoo",
+        "AM": "AMbulance", "AN": "ANt", "AO": "AOrta", "AP": "APple", "AQ": "AQuarium", "AR": "AIR",
+        "AS": "AStronaut", "AT": "AuTo)", "AU": "Gold", "AV": "Kajukatli", "AW": "Award", "AX": "Axe",
+
+        // Row B
+        "BA": "BAll", "BB": "Big Ben clock", "BC": "BisCuit", "BD": "BeD", "BE": "BEe", "BF": "BlindFold",
+        "BG": "BaG", "BH": "Black Hole", "BI": "BIcycle", "BJ": "BiJli", "BK": "BooK", "BL": "BLood",
+        "BM": "BrooM", "BN": "BaNana", "BO": "BOne", "BP": "Blood Pressure", "BQ": "Bike", "BR": "BRead",
+        "BS": "BuS", "BT": "BoTtle", "BU": "BUlb", "BV": "BournVita", "BW": "BoW", "BX": "BoX",
+
+        // Row C
+        "CA": "CAmel", "CB": "CraB", "CC": "CocaCola", "CD": "Compact Disc", "CE": "Sea", "CF": "CoFfee",
+        "CG": "CaGe", "CH": "CHess", "CI": "Cigaratte", "CJ": "ConJuring", "CK": "CaKe", "CL": "CeLL",
+        "CM": "CoMb", "CN": "CaN", "CO": "Carbon Monoxide", "CP": "CuP", "CQ": "Cook", "CR": "CaR",
+        "CS": "Computer Science", "CT": "CaT", "CU": "CUcumber", "CV": "CoronaVirus", "CW": "CoW", "CX": "CraX",
+
+        // Row D
+        "DA": "DAlsy", "DB": "DaB", "DC": "DiCe", "DD": "DIDdy", "DE": "DEer", "DF": "Dolphin",
+        "DG": "DoG", "DH": "DaHi", "DI": "Diamond", "DJ": "Disc Jockey", "DK": "DonKey", "DL": "DoLL",
+        "DM": "Dairy Milk", "DN": "DiNner", "DO": "DOraemon", "DP": "DiaPer", "DQ": "Duck", "DR": "DooR",
+        "DS": "10", "DT": "DoT", "DU": "DUolingo", "DV": "DiVe", "DW": "Don't Worry", "DX": "DureX",
+
+        // Row E
+        "EA": "EAgle", "EB": "ElBow", "EC": "EClairs", "ED": "ED sheeren", "EE": "Eel", "EF": "Earphones",
+        "EG": "EGg", "EH": "EartH", "EI": "8", "EJ": "EmoJi", "EK": "1", "EL": "ELectron",
+        "EM": "Elon Musk", "EN": "ENgland", "EO": "pigeOn", "EP": "ElePhant", "EQ": "EarthQuake", "ER": "EaR",
+        "ES": "EScalator", "ET": "Eiffel Tower", "EU": "EUreka", "EV": "EVerest", "EW": "EarthWorm", "EX": "surf EXcel",
+
+        // Row F
+        "FA": "FAn", "FB": "FaceBook", "FC": "FaCe", "FD": "FriDay", "FE": "Iron", "FF": "Free Fire",
+        "FG": "FroG", "FH": "FisH", "FI": "File", "FJ": "FIJI", "FK": "ForK", "FL": "FLower",
+        "FM": "Fide Master", "FN": "FaNta", "FO": "FOil", "FP": "FootPrints", "FQ": "Fuck you", "FR": "FRidge",
+        "FS": "For Sale tag", "FT": "FisT", "FU": "FUnnel", "FV": "FeVicol", "FW": "FireWorks", "FX": "FoX"
+    };
+
+    // State Variables
+    let database = {};
+    let queue = [];
+    let currentIndex = 0;
+    let score = 0;
+    let results = [];
+    let currentMode = "normal"; 
+
+    // DOM Elements
+    const setupScreen = document.getElementById('setup-screen');
+    const editorScreen = document.getElementById('editor-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const inputField = document.getElementById('user-input');
+    const jsonEditor = document.getElementById('json-editor');
+
+    // Initialize Database from LocalStorage or Defaults
+    function initDatabase() {
+        const stored = localStorage.getItem('cubing_pairs_db');
+        if (stored) {
+            try {
+                database = JSON.parse(stored);
+            } catch (e) {
+                console.error("Stored DB corrupted, reverting to default");
+                database = JSON.parse(JSON.stringify(defaultDatabase));
+            }
+        } else {
+            database = JSON.parse(JSON.stringify(defaultDatabase));
+        }
+    }
+
+    // Call init on load
+    initDatabase();
+
+    // Event Listeners
+    inputField.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") submitAnswer();
+    });
+
+    // --- EDITOR LOGIC ---
+    function openEditor() {
+        jsonEditor.value = JSON.stringify(database, null, 4); // Pretty print
+        setupScreen.classList.add('hidden');
+        editorScreen.classList.remove('hidden');
+        document.getElementById('editor-error').innerText = "";
+    }
+
+    function closeEditor() {
+        editorScreen.classList.add('hidden');
+        setupScreen.classList.remove('hidden');
+    }
+
+    function saveDatabase() {
+        const raw = jsonEditor.value;
+        try {
+            const parsed = JSON.parse(raw);
+            // Basic validation: ensure it's an object
+            if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+                throw new Error("Root must be a JSON object (dictionary).");
+            }
+            database = parsed;
+            localStorage.setItem('cubing_pairs_db', JSON.stringify(database));
+            closeEditor();
+        } catch (e) {
+            document.getElementById('editor-error').innerText = "Invalid JSON: " + e.message;
+        }
+    }
+
+    function resetDefaults() {
+        if(confirm("Are you sure? This will delete all your custom edits.")) {
+            database = JSON.parse(JSON.stringify(defaultDatabase));
+            localStorage.setItem('cubing_pairs_db', JSON.stringify(database));
+            jsonEditor.value = JSON.stringify(database, null, 4);
+        }
+    }
+
+    // --- QUIZ LOGIC ---
+
+    function formatForDisplay(rawWord) {
+        // Formats word for "Reverse" mode so capitalization doesn't give away the pair.
+        // e.g., "Silver (Ag)" -> "Silver (ag)"
+        // e.g., "EGg" -> "Egg"
+        if(!rawWord) return "";
+        const lower = rawWord.toLowerCase();
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+    }
+
+    function startQuiz() {
+        const filter = document.getElementById('letter-filter').value;
+        const count = parseInt(document.getElementById('num-pairs').value);
+        currentMode = document.getElementById('test-mode').value;
+        
+        let keys = Object.keys(database);
+        if (filter !== "ALL") {
+            keys = keys.filter(k => k.toUpperCase().startsWith(filter));
+        }
+
+        keys.sort(() => Math.random() - 0.5);
+        queue = keys.slice(0, count);
+
+        if (queue.length === 0) {
+            alert("No pairs found for this selection!");
+            return;
+        }
+
+        currentIndex = 0;
+        score = 0;
+        results = [];
+        document.getElementById('total-count').innerText = queue.length;
+        
+        setupScreen.classList.add('hidden');
+        quizScreen.classList.remove('hidden');
+        
+        loadCard();
+    }
+
+    function loadCard() {
+        if (currentIndex >= queue.length) {
+            endQuiz();
+            return;
+        }
+        
+        const pairKey = queue[currentIndex];
+        const wordValue = database[pairKey];
+
+        document.getElementById('current-count').innerText = currentIndex + 1;
+        document.getElementById('feedback-msg').innerText = "";
+        document.getElementById('feedback-msg').className = "feedback";
+        inputField.value = "";
+        inputField.focus();
+
+        if (currentMode === "normal") {
+            // Show: AA, Expect: "AA perm"
+            document.getElementById('display-text').innerText = pairKey;
+            document.getElementById('display-text').style.fontSize = "4rem";
+            inputField.placeholder = "Type the word...";
+        } else {
+            // Show: "Aa perm", Expect: AA
+            document.getElementById('display-text').innerText = formatForDisplay(wordValue);
+            document.getElementById('display-text').style.fontSize = "2.5rem";
+            inputField.placeholder = "Type the letter pair...";
+        }
+    }
+
+    function submitAnswer() {
+        const pairKey = queue[currentIndex];
+        const wordValue = database[pairKey];
+        const userAnswer = inputField.value.trim();
+
+        if (!userAnswer) return;
+
+        let isCorrect = false;
+        let correctAnswerText = "";
+
+        if (currentMode === "normal") {
+            // User guessed word (Strict match on word)
+            isCorrect = userAnswer.toLowerCase() === wordValue.toLowerCase();
+            correctAnswerText = wordValue;
+        } else {
+            // User guessed Pair (Strict match on key)
+            isCorrect = userAnswer.toLowerCase() === pairKey.toLowerCase();
+            correctAnswerText = pairKey;
+        }
+
+        if (isCorrect) {
+            score++;
+            document.getElementById('feedback-msg').innerText = "Correct!";
+            document.getElementById('feedback-msg').classList.add('correct');
+        } else {
+            document.getElementById('feedback-msg').innerText = `Incorrect! It was: ${correctAnswerText}`;
+            document.getElementById('feedback-msg').classList.add('wrong');
+        }
+
+        results.push({
+            question: currentMode === "normal" ? pairKey : formatForDisplay(wordValue),
+            user: userAnswer,
+            correct: correctAnswerText,
+            isCorrect: isCorrect
+        });
+
+        setTimeout(() => {
+            currentIndex++;
+            loadCard();
+        }, 1200);
+    }
+
+    function endQuiz() {
+        quizScreen.classList.add('hidden');
+        resultScreen.classList.remove('hidden');
+
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('final-total').innerText = queue.length;
+
+        const list = document.getElementById('results-log');
+        list.innerHTML = "";
+
+        results.forEach(res => {
+            const div = document.createElement('div');
+            div.className = "result-item";
+            div.innerHTML = `
+                <span style="flex:1"><strong>${res.question}</strong></span>
+                <span style="flex:1; text-align:right; line-height:1.2" class="${res.isCorrect ? 'success' : 'missed'}">
+                    ${res.isCorrect ? '✔' : `Exp: ${res.correct} <br> <small>(You: ${res.user})</small>`}
+                </span>
+            `;
+            list.appendChild(div);
+        });
+    }
+</script>
+
+</body>
+</html>
