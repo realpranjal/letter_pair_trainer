@@ -1,193 +1,505 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3BLD Letter Pair Trainer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* DARK MODE VARIABLES */
         :root {
-            --primary: #3b82f6;
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #e2e8f0;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --success: #22c55e;
-            --error: #ef4444;
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.2);
+            --bg: #080e1a;
+            --bg2: #0d1625;
+            --card: #111d2e;
+            --card2: #162236;
+            --text: #e8f0fe;
+            --text-muted: #5a7599;
+            --border: #1e3354;
+            --border-bright: #2a4a70;
+            --success: #34d399;
+            --success-bg: rgba(52, 211, 153, 0.1);
+            --error: #f87171;
+            --error-bg: rgba(248, 113, 113, 0.1);
+            --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        [data-theme="light"] {
+            --primary: #0284c7;
+            --primary-glow: rgba(2, 132, 199, 0.12);
+            --bg: #f0f5fc;
+            --bg2: #e4ecf7;
+            --card: #ffffff;
+            --card2: #f8faff;
+            --text: #0f2040;
+            --text-muted: #6b8aaa;
+            --border: #d0dff0;
+            --border-bright: #a8c4e0;
+            --success: #059669;
+            --success-bg: rgba(5, 150, 105, 0.08);
+            --error: #dc2626;
+            --error-bg: rgba(220, 38, 38, 0.07);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg);
+            font-family: 'Outfit', system-ui, sans-serif;
+            background: var(--bg);
             color: var(--text);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 1rem; /* Prevent edge touching on mobile */
-            box-sizing: border-box;
+            align-items: flex-start;
+            padding: 1.5rem 1rem 3rem;
+            transition: background var(--transition), color var(--transition);
         }
 
-        .container {
-            background: var(--card);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+        /* Background grid pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrapper {
             width: 100%;
-            max-width: 500px;
-            text-align: center;
-            border: 1px solid var(--border);
+            max-width: 520px;
+            position: relative;
+            z-index: 1;
         }
 
-        h1 { margin-top: 0; color: var(--primary); }
-        
-        .form-group {
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 1.5rem;
-            text-align: left;
+            padding: 0 0.25rem;
         }
 
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--primary);
+        }
+        .logo span { color: var(--text-muted); font-weight: 300; }
+
+        /* Dark mode toggle */
+        .theme-toggle {
+            width: 52px;
+            height: 28px;
+            background: var(--card2);
+            border: 1.5px solid var(--border-bright);
+            border-radius: 14px;
+            cursor: pointer;
+            position: relative;
+            transition: all var(--transition);
+            flex-shrink: 0;
+        }
+        .theme-toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            transition: transform var(--transition), background var(--transition);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+        [data-theme="light"] .theme-toggle::after { transform: translateX(24px); }
+        .theme-toggle .toggle-icons {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 6px;
+            font-size: 11px;
+            pointer-events: none;
+        }
+
+        /* Card */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.03) inset;
+            transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+        }
+        [data-theme="light"] .card {
+            box-shadow: 0 8px 32px rgba(0,0,50,0.08), 0 1px 3px rgba(0,0,50,0.06);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.75rem;
+            font-weight: 400;
+        }
+
+        /* Form */
+        .form-group { margin-bottom: 1.25rem; }
         label {
             display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
             margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--text);
         }
 
-        /* Inputs */
         select, input[type="number"], input[type="text"], textarea {
             width: 100%;
-            padding: 0.75rem;
-            border: 2px solid var(--border);
-            background-color: var(--bg);
+            padding: 0.7rem 0.9rem;
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
             color: var(--text);
             border-radius: 8px;
-            font-size: 1rem;
-            box-sizing: border-box;
+            font-size: 0.95rem;
+            font-family: 'Outfit', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
             color-scheme: dark;
-            font-family: inherit;
         }
-        
-        /* Specific styles for the JSON editor */
-        textarea {
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.85rem;
-            resize: vertical;
-            min-height: 300px;
-            line-height: 1.4;
+        [data-theme="light"] select, [data-theme="light"] input, [data-theme="light"] textarea {
+            color-scheme: light;
         }
-        
-        input:focus, select:focus, textarea:focus {
+        select:focus, input:focus, textarea:focus {
             outline: none;
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        textarea {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8rem;
+            resize: vertical;
+            min-height: 280px;
+            line-height: 1.5;
         }
 
         /* Buttons */
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s;
-            margin-bottom: 0.5rem;
-        }
-
-        button:hover { filter: brightness(110%); }
-        
-        button.secondary {
-            background-color: transparent;
-            border: 2px solid var(--border);
-            color: var(--text-muted);
-        }
-        button.secondary:hover {
-            border-color: var(--text-muted);
-            color: var(--text);
-            background-color: var(--border);
-        }
-        
-        button.danger {
-            background-color: transparent;
-            border: 2px solid var(--error);
-            color: var(--error);
-        }
-        button.danger:hover {
-            background-color: var(--error);
-            color: white;
-        }
-
-        /* Quiz UI */
-        .question-display {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin: 1rem 0;
-            color: var(--text);
-            min-height: 80px;
-            display: flex;
+        .btn {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            word-break: break-word;
+            gap: 0.4rem;
+            width: 100%;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 9px;
+            font-size: 0.95rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s;
+            margin-bottom: 0.6rem;
+            letter-spacing: 0.01em;
         }
-
-        .feedback {
-            height: 1.5rem;
-            margin: 0.5rem 0;
-            font-weight: bold;
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 16px var(--primary-glow);
         }
-        .feedback.correct { color: var(--success); }
-        .feedback.wrong { color: var(--error); }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); }
+        .btn-primary:active { transform: translateY(0); }
 
-        .progress {
-            margin-bottom: 1rem;
+        .btn-secondary {
+            background: transparent;
+            border: 1.5px solid var(--border-bright);
             color: var(--text-muted);
-            font-size: 0.9rem;
+        }
+        .btn-secondary:hover { border-color: var(--text-muted); color: var(--text); background: var(--card2); }
+
+        .btn-danger {
+            background: transparent;
+            border: 1.5px solid var(--error);
+            color: var(--error);
+        }
+        .btn-danger:hover { background: var(--error); color: white; }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 1.25rem 0;
         }
 
-        .hidden { display: none; }
-        
-        /* Results Table */
+        /* Screen transitions */
+        .screen {
+            animation: screenIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes screenIn {
+            from { opacity: 0; transform: translateY(16px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .hidden { display: none !important; }
+
+        /* Progress Bar */
+        .progress-bar-wrap {
+            margin-bottom: 1.5rem;
+        }
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .progress-meta .pair-label { font-family: 'DM Mono', monospace; font-size: 0.85rem; color: var(--text); }
+        .progress-bar-track {
+            height: 6px;
+            background: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #818cf8);
+            border-radius: 99px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+        }
+
+        /* Live Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-pill {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem 0.6rem;
+            text-align: center;
+        }
+        .stat-pill .stat-val {
+            font-size: 1.3rem;
+            font-weight: 800;
+            line-height: 1;
+            font-family: 'DM Mono', monospace;
+        }
+        .stat-pill .stat-lbl {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .stat-pill.good .stat-val { color: var(--success); }
+        .stat-pill.bad  .stat-val { color: var(--error); }
+        .stat-pill.neutral .stat-val { color: var(--primary); }
+
+        /* Question Card */
+        .question-card {
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            margin-bottom: 1.25rem;
+            min-height: 130px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 120px; height: 120px;
+            background: var(--primary-glow);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .question-hint {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+        .question-text {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text);
+            line-height: 1;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .question-text.word { font-size: 2rem; letter-spacing: -0.01em; }
+
+        /* Card flip animation */
+        .question-card.flash-correct { animation: flashCorrect 0.4s ease; }
+        .question-card.flash-wrong   { animation: flashWrong 0.4s ease; }
+        @keyframes flashCorrect {
+            0%,100% { border-color: var(--border); background: var(--bg2); }
+            50%      { border-color: var(--success); background: var(--success-bg); }
+        }
+        @keyframes flashWrong {
+            0%,100% { border-color: var(--border); background: var(--bg2); }
+            50%      { border-color: var(--error); background: var(--error-bg); }
+        }
+
+        /* Feedback */
+        .feedback {
+            min-height: 1.8rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            border-radius: 6px;
+            padding: 0.3rem 0.75rem;
+            transition: all 0.2s;
+        }
+        .feedback.correct { color: var(--success); background: var(--success-bg); }
+        .feedback.wrong   { color: var(--error);   background: var(--error-bg); }
+
+        /* Answer input */
+        .answer-input {
+            font-family: 'DM Mono', monospace !important;
+            font-size: 1.1rem !important;
+            font-weight: 500;
+            text-align: center;
+            letter-spacing: 0.05em;
+        }
+        .btn-row { display: flex; gap: 0.6rem; }
+        .btn-row .btn { margin-bottom: 0; }
+
+        /* Results */
+        .score-hero {
+            text-align: center;
+            padding: 1.5rem 0;
+        }
+        .score-big {
+            font-size: 3.5rem;
+            font-weight: 800;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: -0.04em;
+        }
+        .score-big .score-num { color: var(--primary); }
+        .score-big .score-sep { color: var(--text-muted); }
+        .score-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        .accuracy-badge {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.3rem 1rem;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
         .results-list {
-            text-align: left;
-            max-height: 300px;
+            max-height: 280px;
             overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
             margin: 1rem 0;
-            border-top: 1px solid var(--border);
         }
         .result-item {
-            padding: 0.75rem 0.5rem;
+            padding: 0.65rem 0.85rem;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: 0.88rem;
+            transition: background 0.15s;
         }
-        .missed { color: var(--error); }
-        .success { color: var(--success); }
-        small { color: var(--text-muted); }
+        .result-item:last-child { border-bottom: none; }
+        .result-item:hover { background: var(--bg2); }
+        .result-item .q { font-family: 'DM Mono', monospace; font-weight: 600; font-size: 0.9rem; }
+        .result-item .ans { text-align: right; font-size: 0.8rem; line-height: 1.4; }
+        .result-item .ans.correct { color: var(--success); }
+        .result-item .ans.wrong   { color: var(--error); }
+        .result-item .ans small   { color: var(--text-muted); display: block; }
+
+        /* Editor */
+        .editor-note {
+            background: var(--bg2);
+            border-left: 3px solid var(--primary);
+            border-radius: 0 6px 6px 0;
+            padding: 0.6rem 0.85rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        .editor-error {
+            font-size: 0.8rem;
+            color: var(--error);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            min-height: 1.2rem;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 99px; }
+
+        @media (max-width: 480px) {
+            .card { padding: 1.5rem 1.25rem; }
+            .question-text { font-size: 2.8rem; }
+            .question-text.word { font-size: 1.6rem; }
+        }
     </style>
 </head>
 <body>
+<div class="wrapper">
+    <div class="header">
+        <div class="logo">3BLD <span>/ Pair Trainer</span></div>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle dark/light mode">
+            <div class="toggle-icons"><span>🌙</span><span>☀️</span></div>
+        </button>
+    </div>
 
-<div class="container" id="app">
-    <div id="setup-screen">
-        <h1>Letter Pair Trainer (Speffz)</h1>
-        
+    <!-- SETUP SCREEN -->
+    <div class="card screen" id="setup-screen">
+        <h1>Letter Pair Trainer</h1>
+        <p class="subtitle">Speffz system • memorisation drill</p>
+
         <div class="form-group">
             <label>Test Mode</label>
             <select id="test-mode">
-                <option value="normal">Show Pair, Guess Word (e.g. AA -> ?)</option>
-                <option value="reverse">Show Word, Guess Pair (e.g. Apple -> ?)</option>
+                <option value="normal">Show Pair → Guess Word &nbsp;(AA → ?)</option>
+                <option value="reverse">Show Word → Guess Pair &nbsp;(Apple → ?)</option>
             </select>
         </div>
-
         <div class="form-group">
             <label>Starting Letter</label>
             <select id="letter-filter">
-                <option value="ALL">All Available (A-F)</option>
+                <option value="ALL">All Available (A – F)</option>
                 <option value="A">Starts with A</option>
                 <option value="B">Starts with B</option>
                 <option value="C">Starts with C</option>
@@ -196,299 +508,312 @@
                 <option value="F">Starts with F</option>
             </select>
         </div>
-
         <div class="form-group">
             <label>Number of Pairs</label>
             <input type="number" id="num-pairs" value="10" min="1" max="144">
         </div>
 
-        <button onclick="startQuiz()">Start Practice</button>
-        <button class="secondary" onclick="openEditor()">Edit Database</button>
+        <div class="divider"></div>
+        <button class="btn btn-primary" onclick="startQuiz()">▶ &nbsp;Start Practice</button>
+        <button class="btn btn-secondary" onclick="openEditor()">✎ &nbsp;Edit Database</button>
     </div>
 
-    <div id="editor-screen" class="hidden">
+    <!-- EDITOR SCREEN -->
+    <div class="card screen hidden" id="editor-screen">
         <h1>Edit Database</h1>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
-            Edit the JSON below. Be careful with commas and quotes!
-        </p>
+        <p class="subtitle">Modify your letter pair words below</p>
+        <div class="editor-note">Edit the JSON carefully — keys are letter pairs (e.g. <code>"AB"</code>), values are your memory words.</div>
         <textarea id="json-editor" spellcheck="false"></textarea>
-        <div id="editor-error" style="color: var(--error); font-weight: bold; margin-bottom: 10px;"></div>
-        
-        <button onclick="saveDatabase()">Save & Return</button>
-        <button class="secondary" onclick="closeEditor()">Cancel</button>
-        <button class="danger" onclick="resetDefaults()" style="margin-top: 1rem;">Reset to Default</button>
+        <div class="editor-error" id="editor-error"></div>
+        <button class="btn btn-primary" onclick="saveDatabase()">✔ &nbsp;Save & Return</button>
+        <button class="btn btn-secondary" onclick="closeEditor()">Cancel</button>
+        <div class="divider"></div>
+        <button class="btn btn-danger" onclick="resetDefaults()">↺ &nbsp;Reset to Defaults</button>
     </div>
 
-    <div id="quiz-screen" class="hidden">
-        <div class="progress">Pair <span id="current-count">1</span> / <span id="total-count">10</span></div>
-        
-        <div class="question-display" id="display-text">AA</div>
-        
-        <div class="feedback" id="feedback-msg"></div>
-        
-        <input type="text" id="user-input" placeholder="Type your answer..." autocomplete="off">
-        <button onclick="submitAnswer()" style="margin-top: 1rem;">Submit</button>
-        <button class="secondary" onclick="endQuiz()">Quit</button>
-    </div>
-
-    <div id="result-screen" class="hidden">
-        <h1>Results</h1>
-        <p>Score: <strong id="final-score">0</strong> / <strong id="final-total">0</strong></p>
-        <div class="results-list" id="results-log">
+    <!-- QUIZ SCREEN -->
+    <div class="card screen hidden" id="quiz-screen">
+        <!-- Progress -->
+        <div class="progress-bar-wrap">
+            <div class="progress-meta">
+                <span class="pair-label" id="pair-label">AA</span>
+                <span id="progress-text">1 / 10</span>
             </div>
-        <button onclick="location.reload()">Practice Again</button>
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- Live Stats -->
+        <div class="stats-bar">
+            <div class="stat-pill good">
+                <div class="stat-val" id="stat-correct">0</div>
+                <div class="stat-lbl">Correct</div>
+            </div>
+            <div class="stat-pill bad">
+                <div class="stat-val" id="stat-wrong">0</div>
+                <div class="stat-lbl">Wrong</div>
+            </div>
+            <div class="stat-pill neutral">
+                <div class="stat-val" id="stat-acc">—</div>
+                <div class="stat-lbl">Accuracy</div>
+            </div>
+        </div>
+
+        <!-- Question -->
+        <div class="question-card" id="question-card">
+            <div class="question-hint" id="question-hint">LETTER PAIR</div>
+            <div class="question-text" id="display-text">AA</div>
+        </div>
+
+        <div class="feedback" id="feedback-msg"></div>
+
+        <input type="text" class="answer-input" id="user-input" placeholder="Type your answer…" autocomplete="off">
+
+        <div class="btn-row" style="margin-top: 0.85rem;">
+            <button class="btn btn-primary" onclick="submitAnswer()" style="flex:2">Submit</button>
+            <button class="btn btn-secondary" onclick="endQuiz()" style="flex:1">Quit</button>
+        </div>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div class="card screen hidden" id="result-screen">
+        <div class="score-hero">
+            <div class="score-big">
+                <span class="score-num" id="final-score">0</span>
+                <span class="score-sep"> / </span>
+                <span id="final-total">0</span>
+            </div>
+            <div class="score-label">pairs answered correctly</div>
+            <div class="accuracy-badge" id="accuracy-badge"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="results-list" id="results-log"></div>
+
+        <button class="btn btn-primary" onclick="location.reload()">↺ &nbsp;Practice Again</button>
     </div>
 </div>
 
 <script>
-    // The exact default list provided by the user
+    // ─── Database ───────────────────────────────────────────────
     const defaultDatabase = {
-        // Row A
-        "AA": "AA perm", "AB": "ABs", "AC": "Air Conditioner", "AD": "ADvertisement", "AE": "AEroplane", "AF": "AFrica",
-        "AG": "Silver (Ag)", "AH": "Air Hockey", "AI": "Artificial Intelligence (AI)", "AJ": "Right-angled triangle)", "AK": "AK-47", "AL": "ALoo",
-        "AM": "AMbulance", "AN": "ANt", "AO": "AOrta", "AP": "APple", "AQ": "AQuarium", "AR": "AIR",
-        "AS": "AStronaut", "AT": "AuTo", "AU": "Gold", "AV": "Kajukatli", "AW": "Award", "AX": "Axe",
-
-        // Row B
-        "BA": "BAll", "BB": "Big Ben clock", "BC": "BisCuit", "BD": "BeD", "BE": "BEe", "BF": "BlindFold",
-        "BG": "BaG", "BH": "Black Hole", "BI": "BIcycle", "BJ": "BiJli", "BK": "BooK", "BL": "BLood",
-        "BM": "BrooM", "BN": "BaNana", "BO": "BOne", "BP": "Blood Pressure", "BQ": "Bike", "BR": "BRead",
-        "BS": "BuS", "BT": "BoTtle", "BU": "BUlb", "BV": "BournVita", "BW": "BoW", "BX": "BoX",
-
-        // Row C
-        "CA": "CAmel", "CB": "CraB", "CC": "CocaCola", "CD": "Compact Disc", "CE": "Sea", "CF": "CoFfee",
-        "CG": "CaGe", "CH": "CHess", "CI": "Cigaratte", "CJ": "ConJuring", "CK": "CaKe", "CL": "CeLL",
-        "CM": "CoMb", "CN": "CaN", "CO": "Carbon Monoxide", "CP": "CuP", "CQ": "Cook", "CR": "CaR",
-        "CS": "Computer Science", "CT": "CaT", "CU": "CUcumber", "CV": "CoronaVirus", "CW": "CoW", "CX": "CraX",
-
-        // Row D
-        "DA": "DAlsy", "DB": "DaB", "DC": "DiCe", "DD": "DIDdy", "DE": "DEer", "DF": "Dolphin",
-        "DG": "DoG", "DH": "DaHi", "DI": "Diamond", "DJ": "Disc Jockey", "DK": "DonKey", "DL": "DoLL",
-        "DM": "Dairy Milk", "DN": "DiNner", "DO": "DOraemon", "DP": "DiaPer", "DQ": "Duck", "DR": "DooR",
-        "DS": "10", "DT": "DoT", "DU": "DUolingo", "DV": "DiVe", "DW": "Don't Worry", "DX": "DureX",
-
-        // Row E
-        "EA": "EAgle", "EB": "ElBow", "EC": "EClairs", "ED": "ED sheeren", "EE": "Eel", "EF": "Earphones",
-        "EG": "EGg", "EH": "EartH", "EI": "8", "EJ": "EmoJi", "EK": "1", "EL": "ELectron",
-        "EM": "Elon Musk", "EN": "ENgland", "EO": "pigeOn", "EP": "ElePhant", "EQ": "EarthQuake", "ER": "EaR",
-        "ES": "EScalator", "ET": "Eiffel Tower", "EU": "EUreka", "EV": "EVerest", "EW": "EarthWorm", "EX": "surf EXcel",
-
-        // Row F
-        "FA": "FAn", "FB": "FaceBook", "FC": "FaCe", "FD": "FriDay", "FE": "Iron", "FF": "Free Fire",
-        "FG": "FroG", "FH": "FisH", "FI": "File", "FJ": "FIJI", "FK": "ForK", "FL": "FLower",
-        "FM": "Fide Master", "FN": "FaNta", "FO": "FOil", "FP": "FootPrints", "FQ": "Fuck you", "FR": "FRidge",
-        "FS": "For Sale tag", "FT": "FisT", "FU": "FUnnel", "FV": "FeVicol", "FW": "FireWorks", "FX": "FoX"
+        "AA":"AA perm","AB":"ABs","AC":"Air Conditioner","AD":"ADvertisement","AE":"AEroplane","AF":"AFrica",
+        "AG":"Silver (Ag)","AH":"Air Hockey","AI":"Artificial Intelligence (AI)","AJ":"Right-angled triangle","AK":"AK-47","AL":"ALoo",
+        "AM":"AMbulance","AN":"ANt","AO":"AOrta","AP":"APple","AQ":"AQuarium","AR":"AIR",
+        "AS":"AStronaut","AT":"AuTo","AU":"Gold","AV":"Kajukatli","AW":"Award","AX":"Axe",
+        "BA":"BAll","BB":"Big Ben clock","BC":"BisCuit","BD":"BeD","BE":"BEe","BF":"BlindFold",
+        "BG":"BaG","BH":"Black Hole","BI":"BIcycle","BJ":"BiJli","BK":"BooK","BL":"BLood",
+        "BM":"BrooM","BN":"BaNana","BO":"BOne","BP":"Blood Pressure","BQ":"Bike","BR":"BRead",
+        "BS":"BuS","BT":"BoTtle","BU":"BUlb","BV":"BournVita","BW":"BoW","BX":"BoX",
+        "CA":"CAmel","CB":"CraB","CC":"CocaCola","CD":"Compact Disc","CE":"Sea","CF":"CoFfee",
+        "CG":"CaGe","CH":"CHess","CI":"Cigaratte","CJ":"ConJuring","CK":"CaKe","CL":"CeLL",
+        "CM":"CoMb","CN":"CaN","CO":"Carbon Monoxide","CP":"CuP","CQ":"Cook","CR":"CaR",
+        "CS":"Computer Science","CT":"CaT","CU":"CUcumber","CV":"CoronaVirus","CW":"CoW","CX":"CraX",
+        "DA":"DAlsy","DB":"DaB","DC":"DiCe","DD":"DIDdy","DE":"DEer","DF":"Dolphin",
+        "DG":"DoG","DH":"DaHi","DI":"Diamond","DJ":"Disc Jockey","DK":"DonKey","DL":"DoLL",
+        "DM":"Dairy Milk","DN":"DiNner","DO":"DOraemon","DP":"DiaPer","DQ":"Duck","DR":"DooR",
+        "DS":"10","DT":"DoT","DU":"DUolingo","DV":"DiVe","DW":"Don't Worry","DX":"DureX",
+        "EA":"EAgle","EB":"ElBow","EC":"EClairs","ED":"ED sheeren","EE":"Eel","EF":"Earphones",
+        "EG":"EGg","EH":"EartH","EI":"8","EJ":"EmoJi","EK":"1","EL":"ELectron",
+        "EM":"Elon Musk","EN":"ENgland","EO":"pigeOn","EP":"ElePhant","EQ":"EarthQuake","ER":"EaR",
+        "ES":"EScalator","ET":"Eiffel Tower","EU":"EUreka","EV":"EVerest","EW":"EarthWorm","EX":"surf EXcel",
+        "FA":"FAn","FB":"FaceBook","FC":"FaCe","FD":"FriDay","FE":"Iron","FF":"Free Fire",
+        "FG":"FroG","FH":"FisH","FI":"File","FJ":"FIJI","FK":"ForK","FL":"FLower",
+        "FM":"Fide Master","FN":"FaNta","FO":"FOil","FP":"FootPrints","FQ":"Fuck you","FR":"FRidge",
+        "FS":"For Sale tag","FT":"FisT","FU":"FUnnel","FV":"FeVicol","FW":"FireWorks","FX":"FoX"
     };
 
-    // State Variables
-    let database = {};
-    let queue = [];
-    let currentIndex = 0;
-    let score = 0;
-    let results = [];
-    let currentMode = "normal"; 
+    let database = {}, queue = [], currentIndex = 0, score = 0, wrong = 0, results = [], currentMode = "normal";
 
-    // DOM Elements
-    const setupScreen = document.getElementById('setup-screen');
-    const editorScreen = document.getElementById('editor-screen');
-    const quizScreen = document.getElementById('quiz-screen');
-    const resultScreen = document.getElementById('result-screen');
-    const inputField = document.getElementById('user-input');
-    const jsonEditor = document.getElementById('json-editor');
-
-    // Initialize Database from LocalStorage or Defaults
+    // ─── Init ────────────────────────────────────────────────────
     function initDatabase() {
         const stored = localStorage.getItem('cubing_pairs_db');
-        if (stored) {
-            try {
-                database = JSON.parse(stored);
-            } catch (e) {
-                console.error("Stored DB corrupted, reverting to default");
-                database = JSON.parse(JSON.stringify(defaultDatabase));
-            }
-        } else {
-            database = JSON.parse(JSON.stringify(defaultDatabase));
-        }
+        if (stored) { try { database = JSON.parse(stored); } catch(e) { database = {...defaultDatabase}; } }
+        else database = {...defaultDatabase};
     }
-
-    // Call init on load
     initDatabase();
 
-    // Event Listeners
-    inputField.addEventListener("keypress", function(event) {
-        if (event.key === "Enter") submitAnswer();
-    });
+    // ─── Theme ───────────────────────────────────────────────────
+    function toggleTheme() {
+        const html = document.documentElement;
+        html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
 
-    // --- EDITOR LOGIC ---
+    // ─── Editor ──────────────────────────────────────────────────
+    function showScreen(id) {
+        ['setup-screen','editor-screen','quiz-screen','result-screen'].forEach(s => {
+            const el = document.getElementById(s);
+            if (s === id) { el.classList.remove('hidden'); el.classList.add('screen'); }
+            else el.classList.add('hidden');
+        });
+    }
+
     function openEditor() {
-        jsonEditor.value = JSON.stringify(database, null, 4); // Pretty print
-        setupScreen.classList.add('hidden');
-        editorScreen.classList.remove('hidden');
-        document.getElementById('editor-error').innerText = "";
+        document.getElementById('json-editor').value = JSON.stringify(database, null, 4);
+        document.getElementById('editor-error').innerText = '';
+        showScreen('editor-screen');
     }
-
-    function closeEditor() {
-        editorScreen.classList.add('hidden');
-        setupScreen.classList.remove('hidden');
-    }
-
+    function closeEditor() { showScreen('setup-screen'); }
     function saveDatabase() {
-        const raw = jsonEditor.value;
         try {
-            const parsed = JSON.parse(raw);
-            // Basic validation: ensure it's an object
-            if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-                throw new Error("Root must be a JSON object (dictionary).");
-            }
+            const parsed = JSON.parse(document.getElementById('json-editor').value);
+            if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error("Root must be a JSON object.");
             database = parsed;
             localStorage.setItem('cubing_pairs_db', JSON.stringify(database));
             closeEditor();
-        } catch (e) {
-            document.getElementById('editor-error').innerText = "Invalid JSON: " + e.message;
-        }
+        } catch(e) { document.getElementById('editor-error').innerText = 'Invalid JSON: ' + e.message; }
     }
-
     function resetDefaults() {
-        if(confirm("Are you sure? This will delete all your custom edits.")) {
-            database = JSON.parse(JSON.stringify(defaultDatabase));
+        if (confirm("Reset to defaults? All custom edits will be lost.")) {
+            database = {...defaultDatabase};
             localStorage.setItem('cubing_pairs_db', JSON.stringify(database));
-            jsonEditor.value = JSON.stringify(database, null, 4);
+            document.getElementById('json-editor').value = JSON.stringify(database, null, 4);
         }
     }
 
-    // --- QUIZ LOGIC ---
-
-    function formatForDisplay(rawWord) {
-        // Formats word for "Reverse" mode so capitalization doesn't give away the pair.
-        // e.g., "Silver (Ag)" -> "Silver (ag)"
-        // e.g., "EGg" -> "Egg"
-        if(!rawWord) return "";
-        const lower = rawWord.toLowerCase();
-        return lower.charAt(0).toUpperCase() + lower.slice(1);
-    }
-
+    // ─── Quiz ────────────────────────────────────────────────────
     function startQuiz() {
         const filter = document.getElementById('letter-filter').value;
         const count = parseInt(document.getElementById('num-pairs').value);
         currentMode = document.getElementById('test-mode').value;
-        
-        let keys = Object.keys(database);
-        if (filter !== "ALL") {
-            keys = keys.filter(k => k.toUpperCase().startsWith(filter));
-        }
 
+        let keys = Object.keys(database);
+        if (filter !== 'ALL') keys = keys.filter(k => k.toUpperCase().startsWith(filter));
         keys.sort(() => Math.random() - 0.5);
         queue = keys.slice(0, count);
 
-        if (queue.length === 0) {
-            alert("No pairs found for this selection!");
-            return;
-        }
+        if (!queue.length) { alert('No pairs found for this selection!'); return; }
 
-        currentIndex = 0;
-        score = 0;
-        results = [];
-        document.getElementById('total-count').innerText = queue.length;
-        
-        setupScreen.classList.add('hidden');
-        quizScreen.classList.remove('hidden');
-        
+        currentIndex = 0; score = 0; wrong = 0; results = [];
+        showScreen('quiz-screen');
+        updateStats();
         loadCard();
     }
 
-    function loadCard() {
-        if (currentIndex >= queue.length) {
-            endQuiz();
-            return;
-        }
-        
-        const pairKey = queue[currentIndex];
-        const wordValue = database[pairKey];
-
-        document.getElementById('current-count').innerText = currentIndex + 1;
-        document.getElementById('feedback-msg').innerText = "";
-        document.getElementById('feedback-msg').className = "feedback";
-        inputField.value = "";
-        inputField.focus();
-
-        if (currentMode === "normal") {
-            // Show: AA, Expect: "AA perm"
-            document.getElementById('display-text').innerText = pairKey;
-            document.getElementById('display-text').style.fontSize = "4rem";
-            inputField.placeholder = "Type the word...";
-        } else {
-            // Show: "Aa perm", Expect: AA
-            document.getElementById('display-text').innerText = formatForDisplay(wordValue);
-            document.getElementById('display-text').style.fontSize = "2.5rem";
-            inputField.placeholder = "Type the letter pair...";
-        }
+    function fmt(w) {
+        if (!w) return '';
+        const l = w.toLowerCase();
+        return l.charAt(0).toUpperCase() + l.slice(1);
     }
+
+    function loadCard() {
+        if (currentIndex >= queue.length) { endQuiz(); return; }
+
+        const pairKey = queue[currentIndex];
+        const word = database[pairKey];
+        const total = queue.length;
+        const done = currentIndex;
+
+        // Progress
+        document.getElementById('progress-text').innerText = `${done + 1} / ${total}`;
+        document.getElementById('pair-label').innerText = currentMode === 'normal' ? pairKey : fmt(word);
+        document.getElementById('progress-fill').style.width = `${(done / total) * 100}%`;
+
+        // Question
+        const displayEl = document.getElementById('display-text');
+        const hintEl = document.getElementById('question-hint');
+        document.getElementById('feedback-msg').innerText = '';
+        document.getElementById('feedback-msg').className = 'feedback';
+        document.getElementById('user-input').value = '';
+
+        if (currentMode === 'normal') {
+            displayEl.innerText = pairKey;
+            displayEl.className = 'question-text';
+            hintEl.innerText = 'LETTER PAIR';
+            document.getElementById('user-input').placeholder = 'Type the memory word…';
+        } else {
+            displayEl.innerText = fmt(word);
+            displayEl.className = 'question-text word';
+            hintEl.innerText = 'MEMORY WORD';
+            document.getElementById('user-input').placeholder = 'Type the letter pair…';
+        }
+
+        setTimeout(() => document.getElementById('user-input').focus(), 50);
+    }
+
+    function updateStats() {
+        document.getElementById('stat-correct').innerText = score;
+        document.getElementById('stat-wrong').innerText = wrong;
+        const total = score + wrong;
+        document.getElementById('stat-acc').innerText = total > 0 ? Math.round((score / total) * 100) + '%' : '—';
+    }
+
+    document.getElementById('user-input').addEventListener('keypress', e => { if (e.key === 'Enter') submitAnswer(); });
 
     function submitAnswer() {
         const pairKey = queue[currentIndex];
-        const wordValue = database[pairKey];
-        const userAnswer = inputField.value.trim();
-
+        const word = database[pairKey];
+        const userAnswer = document.getElementById('user-input').value.trim();
         if (!userAnswer) return;
 
-        let isCorrect = false;
-        let correctAnswerText = "";
+        const isCorrect = currentMode === 'normal'
+            ? userAnswer.toLowerCase() === word.toLowerCase()
+            : userAnswer.toLowerCase() === pairKey.toLowerCase();
 
-        if (currentMode === "normal") {
-            // User guessed word (Strict match on word)
-            isCorrect = userAnswer.toLowerCase() === wordValue.toLowerCase();
-            correctAnswerText = wordValue;
-        } else {
-            // User guessed Pair (Strict match on key)
-            isCorrect = userAnswer.toLowerCase() === pairKey.toLowerCase();
-            correctAnswerText = pairKey;
-        }
+        const correct = currentMode === 'normal' ? word : pairKey;
+        const qCard = document.getElementById('question-card');
 
         if (isCorrect) {
             score++;
-            document.getElementById('feedback-msg').innerText = "Correct!";
-            document.getElementById('feedback-msg').classList.add('correct');
+            document.getElementById('feedback-msg').innerText = '✔ Correct!';
+            document.getElementById('feedback-msg').className = 'feedback correct';
+            qCard.classList.remove('flash-wrong'); qCard.classList.add('flash-correct');
         } else {
-            document.getElementById('feedback-msg').innerText = `Incorrect! It was: ${correctAnswerText}`;
-            document.getElementById('feedback-msg').classList.add('wrong');
+            wrong++;
+            document.getElementById('feedback-msg').innerText = `✘ It was: ${correct}`;
+            document.getElementById('feedback-msg').className = 'feedback wrong';
+            qCard.classList.remove('flash-correct'); qCard.classList.add('flash-wrong');
         }
 
         results.push({
-            question: currentMode === "normal" ? pairKey : formatForDisplay(wordValue),
-            user: userAnswer,
-            correct: correctAnswerText,
-            isCorrect: isCorrect
+            question: currentMode === 'normal' ? pairKey : fmt(word),
+            user: userAnswer, correct, isCorrect
         });
 
+        updateStats();
+
         setTimeout(() => {
+            qCard.classList.remove('flash-correct', 'flash-wrong');
             currentIndex++;
             loadCard();
-        }, 1200);
+        }, 1100);
     }
 
     function endQuiz() {
-        quizScreen.classList.add('hidden');
-        resultScreen.classList.remove('hidden');
+        showScreen('result-screen');
+
+        const total = queue.length;
+        const acc = total > 0 ? Math.round((score / total) * 100) : 0;
 
         document.getElementById('final-score').innerText = score;
-        document.getElementById('final-total').innerText = queue.length;
+        document.getElementById('final-total').innerText = total;
+
+        const badge = document.getElementById('accuracy-badge');
+        let emoji, color;
+        if (acc >= 90) { emoji = '🏆 Excellent'; color = 'var(--success)'; }
+        else if (acc >= 70) { emoji = '👍 Good'; color = 'var(--primary)'; }
+        else if (acc >= 50) { emoji = '📈 Keep going'; color = '#f59e0b'; }
+        else { emoji = '💪 Keep practising'; color = 'var(--error)'; }
+        badge.innerText = `${acc}% accuracy · ${emoji}`;
+        badge.style.cssText = `background: ${color}18; color: ${color}; border: 1.5px solid ${color}40;`;
 
         const list = document.getElementById('results-log');
-        list.innerHTML = "";
-
+        list.innerHTML = '';
         results.forEach(res => {
             const div = document.createElement('div');
-            div.className = "result-item";
+            div.className = 'result-item';
             div.innerHTML = `
-                <span style="flex:1"><strong>${res.question}</strong></span>
-                <span style="flex:1; text-align:right; line-height:1.2" class="${res.isCorrect ? 'success' : 'missed'}">
-                    ${res.isCorrect ? '✔' : `Exp: ${res.correct} <br> <small>(You: ${res.user})</small>`}
-                </span>
-            `;
+                <span class="q">${res.question}</span>
+                <span class="ans ${res.isCorrect ? 'correct' : 'wrong'}">
+                    ${res.isCorrect
+                        ? '✔ Correct'
+                        : `✘ ${res.correct}<small>You typed: ${res.user}</small>`}
+                </span>`;
             list.appendChild(div);
         });
     }
 </script>
-
 </body>
 </html>
